@@ -1,9 +1,9 @@
-import { CELL_VALUE, GAME_STATUS } from './constants.js'
+import { TURN, GAME_STATUS, CELL_VALUE } from './constants.js'
 
 export function checkGameStatus(cellValues) {
-  if (!Array.isArray(cellValues) || cellValues.length === 0) throw new Error('Value is not invalid')
+  if (!Array.from(cellValues) || cellValues.length !== 9) return
 
-  const checkStatusList = [
+  const positionCellList = [
     [0, 1, 2],
     [3, 4, 5],
     [6, 7, 8],
@@ -16,36 +16,33 @@ export function checkGameStatus(cellValues) {
     [2, 4, 6],
   ]
 
-  // win
-  const windowIndex = checkStatusList.findIndex((set) => {
-    const first = cellValues[set[0]]
-    const second = cellValues[set[1]]
-    const third = cellValues[set[2]]
+  const index = positionCellList.findIndex((positionCell) => {
+    const first = cellValues[positionCell[0]]
+    const second = cellValues[positionCell[1]]
+    const third = cellValues[positionCell[2]]
 
     return first !== '' && first === second && second === third
   })
 
-  if (windowIndex >= 0) {
-    const windowValueIndex = checkStatusList[windowIndex][0]
-    const windowValue = cellValues[windowValueIndex]
+  if (index >= 0) {
+    const checkTurn =
+      cellValues[positionCellList[index][0]] === CELL_VALUE.CROSS
+        ? GAME_STATUS.X_WIN
+        : GAME_STATUS.O_WIN
 
     return {
-      status:
-        windowValue.toLowerCase() === CELL_VALUE.CROSS.toLowerCase()
-          ? GAME_STATUS.X_WIN
-          : GAME_STATUS.O_WIN,
-      windowPositions: checkStatusList[windowIndex],
+      status: checkTurn,
+      windowPositions: positionCellList[index],
     }
   }
 
-  // end
-  if (cellValues.every((cell) => cell !== ''))
+  const isEnded = cellValues.every((cell) => cell !== '')
+  if (isEnded)
     return {
       status: GAME_STATUS.ENDED,
       windowPositions: [],
     }
 
-  // playing
   return {
     status: GAME_STATUS.PLAYING,
     windowPositions: [],
